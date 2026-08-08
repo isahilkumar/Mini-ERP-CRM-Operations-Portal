@@ -1,17 +1,27 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+export const rawApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-// Helper to remove double /api/api if present or format path correctly
+const getNormalizedBaseUrl = () => {
+  let base = rawApiUrl.trim().replace(/\/$/, '');
+  if (!base.startsWith('http://') && !base.startsWith('https://')) {
+    base = `https://${base}`;
+  }
+  if (!base.endsWith('/api')) {
+    base = `${base}/api`;
+  }
+  return base;
+};
+
+export const API_BASE_URL = getNormalizedBaseUrl();
+
 export const getApiUrl = (endpoint: string) => {
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const base = API_BASE_URL.replace(/\/$/, '');
-  return `${base}${cleanEndpoint}`;
+  return `${API_BASE_URL}${cleanEndpoint}`;
 };
 
 export const getImageUrl = (path: string | null | undefined) => {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   
-  // Backend base host without trailing /api
   const serverBase = API_BASE_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${serverBase}${cleanPath}`;

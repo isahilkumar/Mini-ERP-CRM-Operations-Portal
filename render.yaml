@@ -32,8 +32,7 @@ services:
         fromService:
           type: web
           name: mini-erp-backend
-          property: url
-        suffix: /api
+          property: host
 
 databases:
   # 3. PostgreSQL Database
