@@ -1,4 +1,9 @@
-export const rawApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// In production (single Render service), frontend is served by Express
+// so relative /api works perfectly. In local dev, use localhost:5000
+const isDev = import.meta.env.DEV;
+const defaultApiUrl = isDev ? 'http://localhost:5000/api' : '/api';
+
+export const rawApiUrl = import.meta.env.VITE_API_BASE_URL || defaultApiUrl;
 
 const getNormalizedBaseUrl = () => {
     let base = rawApiUrl.trim().replace(/\/$/, '');
