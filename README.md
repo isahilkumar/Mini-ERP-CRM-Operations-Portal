@@ -46,8 +46,15 @@ A full-stack enterprise Operations Portal built for managing **Customers (CRM)**
 
 ### 📦 3. Inventory & Stock Tracking
 - Real-time inventory tracking with low-stock alerts.
-- Product catalog management with image upload capabilities (`multer`).
+- Product catalog management with image upload capabilities.
 - Immutable automated stock movement logging (IN, OUT, ADJUSTMENT).
+
+### ☁️ 6. AWS S3 Cloud Image Storage
+- Product images are uploaded directly to **AWS S3** for permanent, scalable cloud storage.
+- Supports **dynamic storage switching**: automatically uses S3 in production (when AWS env vars are configured) and falls back to local disk in development.
+- Uses `@aws-sdk/client-s3` + `multer-s3` for seamless streaming uploads directly to S3 — no intermediate disk writes.
+- Images are publicly accessible via S3 CDN URLs (e.g., `https://bucket.s3.region.amazonaws.com/products/...`).
+- Full **graceful fallback**: if AWS credentials are not set, the app continues to work using local `uploads/` directory.
 
 ### 🧾 4. Sales Challans & Cart System
 - Multi-item interactive sales order/challan builder.
@@ -71,9 +78,15 @@ A full-stack enterprise Operations Portal built for managing **Customers (CRM)**
 ### Backend
 - **Runtime**: Node.js & Express (TypeScript)
 - **ORM**: Prisma ORM
-- **Database**: PostgreSQL / SQLite
+- **Database**: PostgreSQL (production) / SQLite (local dev)
 - **Authentication**: JWT (JSON Web Tokens) & `bcryptjs` password hashing
-- **File Uploads**: Multer (Local storage / static serving)
+- **File Uploads**: `multer` + `multer-s3` — S3 cloud storage with local disk fallback
+
+### Cloud & Infrastructure
+- **Deployment**: [Render](https://render.com) — Single Web Service serving both frontend and backend
+- **Database Hosting**: Render Managed PostgreSQL
+- **Image Storage**: [AWS S3](https://aws.amazon.com/s3/) — `@aws-sdk/client-s3` for persistent product image storage
+- **CI/CD**: Auto-deploy from GitHub `main` branch on every push
 
 ---
 
@@ -127,14 +140,59 @@ Create `.env` files in both the `backend/` and `frontend/` directories.
 PORT=5000
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mini_erp?schema=public"
 JWT_SECRET="super_secret_jwt_key_change_in_production"
+
+# ☁️ AWS S3 — Optional (for persistent cloud image storage)
+# If these are NOT set, product images fall back to local disk storage
+AWS_ACCESS_KEY_ID="your_aws_access_key_id"
+AWS_SECRET_ACCESS_KEY="your_aws_secret_access_key"
+AWS_REGION="eu-north-1"
+AWS_S3_BUCKET_NAME="your-s3-bucket-name"
 ```
 
 #### **Frontend (`frontend/.env`)**
 ```env
+# Optional: only needed if deploying frontend separately (not via single Render service)
+# Leave empty to use relative /api path (recommended for single-service deployment)
 VITE_API_BASE_URL="http://localhost:5000/api"
 ```
 
 ---
+
+### 💡 AWS S3 Setup (Optional — for Production Image Storage)
+
+> Skip this section if you just want to run the app locally or are okay with local disk storage.
+
+1. **Create an S3 Bucket** in [AWS Console](https://s3.console.aws.amazon.com/) in your preferred region.
+
+2. **Set Bucket Permissions** — Enable public read access for product images:
+   - Uncheck "Block all public access"
+   - Add this Bucket Policy:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [{
+       "Effect": "Allow",
+       "Principal": "*",
+       "Action": "s3:GetObject",
+       "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
+     }]
+   }
+   ```
+
+3. **Create an IAM User** with `AmazonS3FullAccess` policy and copy the Access Key ID and Secret Access Key.
+
+4. **Add the credentials** to your `backend/.env` file or Render Environment Variables.
+
+5. **That's it!** The app automatically detects the credentials at startup and switches to S3 storage:
+   ```
+   Using AWS S3 storage for product uploads.
+   ```
+   Without credentials:
+   ```
+   Using local disk storage for product uploads.
+   ```
+
+
 
 ### 2. Backend Installation & Database Migration
 
