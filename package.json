@@ -1,0 +1,9 @@
+{
+  "name": "mini-erp-crm-portal",
+  "version": "1.0.0",
+  "description": "Full-stack Mini ERP & CRM Operations Portal",
+  "scripts": {
+    "build": "cd backend && npm install && npx prisma generate && npm run build && cd ../frontend && npm install && npm run build",
+    "start": "cd backend && npm start"
+  }
+}
