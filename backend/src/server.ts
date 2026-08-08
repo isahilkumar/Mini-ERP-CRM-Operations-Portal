@@ -13,9 +13,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+}));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Serve uploaded files
+const uploadsPath = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -28,23 +34,24 @@ app.get('/api', (req, res) => {
 });
 
 // Serve frontend static build in single-service production mode
+// When built, this file is at backend/dist/server.js
+// The frontend dist is at frontend/dist (sibling of backend/)
 const frontendDistPath = path.join(__dirname, '../../frontend/dist');
-const altFrontendDistPath = path.join(__dirname, '../frontend/dist');
 
-const activeFrontendPath = fs.existsSync(frontendDistPath) 
-  ? frontendDistPath 
-  : fs.existsSync(altFrontendDistPath) 
-    ? altFrontendDistPath 
-    : null;
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
 
-if (activeFrontendPath) {
-  app.use(express.static(activeFrontendPath));
-  
-  app.get('*', (req, res, next) => {
+  // SPA fallback - must use regex to avoid conflict with Express 5
+  app.use((req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
       return next();
     }
-    res.sendFile(path.join(activeFrontendPath, 'index.html'));
+    const indexPath = path.join(frontendDistPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next();
+    }
   });
 } else {
   app.get('/', (req, res) => {
@@ -55,3 +62,4 @@ if (activeFrontendPath) {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
