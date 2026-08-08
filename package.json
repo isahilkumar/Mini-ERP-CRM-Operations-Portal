@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Full-stack Mini ERP & CRM Operations Portal",
   "scripts": {
+    "render-build": "cd frontend && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npm run build",
     "build": "cd frontend && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npm run build",
     "start": "cd backend && npm start"
   }
