@@ -42,7 +42,7 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     let imageUrl = null;
     if (req.file) {
-      imageUrl = `/uploads/products/${req.file.filename}`;
+      imageUrl = (req.file as any).location || `/uploads/products/${req.file.filename}`;
     }
     
     const productData = { ...req.body };
@@ -65,7 +65,9 @@ export const createProduct = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const imageUrl = req.file ? `/uploads/products/${req.file.filename}` : undefined;
+    const imageUrl = req.file 
+      ? ((req.file as any).location || `/uploads/products/${req.file.filename}`) 
+      : undefined;
 
     const productData = { ...req.body };
     if (productData.unitPrice) productData.unitPrice = Number(productData.unitPrice);
