@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Edit, Plus } from 'lucide-react';
+import { getApiUrl, getImageUrl } from '../api';
 
 interface Product {
   id: number;
@@ -33,7 +34,7 @@ const Products = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/products?limit=100', {
+      const { data } = await axios.get(getApiUrl('/products?limit=100'), {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setProducts(data.data || data);
@@ -66,11 +67,11 @@ const Products = () => {
       if (imageFile) form.append('image', imageFile);
 
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/products/${editingId}`, form, {
+        await axios.put(getApiUrl(`/products/${editingId}`), form, {
           headers: { Authorization: `Bearer ${user?.token}`, 'Content-Type': 'multipart/form-data' }
         });
       } else {
-        await axios.post('http://localhost:5000/api/products', form, {
+        await axios.post(getApiUrl('/products'), form, {
           headers: { Authorization: `Bearer ${user?.token}`, 'Content-Type': 'multipart/form-data' }
         });
       }
@@ -157,7 +158,7 @@ const Products = () => {
               <tr key={p.id}>
                 <td>
                   {p.imageUrl ? 
-                    <img src={p.imageUrl.startsWith('http') ? p.imageUrl : `http://localhost:5000${p.imageUrl}`} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} /> 
+                    <img src={getImageUrl(p.imageUrl)} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} /> 
                     : <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}></div>
                   }
                 </td>

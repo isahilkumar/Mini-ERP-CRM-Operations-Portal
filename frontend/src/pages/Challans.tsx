@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Trash2 } from 'lucide-react';
+import { getApiUrl } from '../api';
 
 interface Customer {
   id: number;
@@ -46,7 +47,7 @@ const Challans = () => {
 
   const fetchChallans = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/challans', {
+      const { data } = await axios.get(getApiUrl('/challans'), {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setChallans(data.data || data);
@@ -57,7 +58,7 @@ const Challans = () => {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/customers?limit=100', {
+      const { data } = await axios.get(getApiUrl('/customers?limit=100'), {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setCustomers(data.data || data);
@@ -68,7 +69,7 @@ const Challans = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/products?limit=100', {
+      const { data } = await axios.get(getApiUrl('/products?limit=100'), {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setProducts(data.data || data);
@@ -79,7 +80,7 @@ const Challans = () => {
 
   const confirmChallan = async (id: number) => {
     try {
-      await axios.put(`http://localhost:5000/api/challans/${id}/confirm`, {}, {
+      await axios.put(getApiUrl(`/challans/${id}/confirm`), {}, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       fetchChallans();
@@ -92,7 +93,7 @@ const Challans = () => {
 
   const cancelChallan = async (id: number) => {
     try {
-      await axios.put(`http://localhost:5000/api/challans/${id}/cancel`, {}, {
+      await axios.put(getApiUrl(`/challans/${id}/cancel`), {}, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       fetchChallans();
@@ -137,7 +138,7 @@ const Challans = () => {
         }))
       };
       
-      await axios.post('http://localhost:5000/api/challans', payload, {
+      await axios.post(getApiUrl('/challans'), payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       

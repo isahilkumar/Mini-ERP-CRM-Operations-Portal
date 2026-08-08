@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Users, Package, FileText, ArrowRight, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+
+import { getApiUrl } from '../api';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -11,7 +13,6 @@ const Dashboard = () => {
   const canSeeCustomers = user?.role === 'ADMIN' || user?.role === 'SALES' || user?.role === 'ACCOUNTS';
   const canSeeProducts = user?.role === 'ADMIN' || user?.role === 'WAREHOUSE' || user?.role === 'SALES';
   const canSeeChallans = user?.role === 'ADMIN' || user?.role === 'SALES' || user?.role === 'ACCOUNTS';
-  const canEdit = user?.role === 'ADMIN' || user?.role === 'SALES' || user?.role === 'WAREHOUSE';
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -19,17 +20,17 @@ const Dashboard = () => {
         let cCount = 0, pCount = 0, chCount = 0;
         
         if (canSeeCustomers) {
-          const res = await axios.get('http://localhost:5000/api/customers?limit=1000', { headers: { Authorization: `Bearer ${user?.token}` } });
+          const res = await axios.get(getApiUrl('/customers?limit=1000'), { headers: { Authorization: `Bearer ${user?.token}` } });
           cCount = res.data.pagination ? res.data.pagination.total : res.data.length;
         }
         
         if (canSeeProducts) {
-          const res = await axios.get('http://localhost:5000/api/products?limit=1000', { headers: { Authorization: `Bearer ${user?.token}` } });
+          const res = await axios.get(getApiUrl('/products?limit=1000'), { headers: { Authorization: `Bearer ${user?.token}` } });
           pCount = res.data.pagination ? res.data.pagination.total : res.data.length;
         }
         
         if (canSeeChallans) {
-          const res = await axios.get('http://localhost:5000/api/challans?limit=1000', { headers: { Authorization: `Bearer ${user?.token}` } });
+          const res = await axios.get(getApiUrl('/challans?limit=1000'), { headers: { Authorization: `Bearer ${user?.token}` } });
           chCount = (res.data.data || res.data).filter((c: any) => c.status === 'DRAFT').length;
         }
 

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../api';
 
 interface StockLog {
   id: number;
@@ -22,7 +23,7 @@ const StockLogs = () => {
 
   const fetchLogs = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/products/stock-logs', {
+      const { data } = await axios.get(getApiUrl('/products/stock-logs'), {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setLogs(data);

@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Package, ArrowRight } from 'lucide-react';
 
+import { getApiUrl } from '../api';
+
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState('');
@@ -21,10 +23,10 @@ const Login = () => {
     setError('');
     try {
       if (isRegistering) {
-        const { data } = await axios.post('http://localhost:5000/api/auth/register', { name, email, password, role });
+        const { data } = await axios.post(getApiUrl('/auth/register'), { name, email, password, role });
         login(data);
       } else {
-        const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+        const { data } = await axios.post(getApiUrl('/auth/login'), { email, password });
         login(data);
       }
       navigate('/');

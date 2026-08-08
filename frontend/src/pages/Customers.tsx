@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Edit, Eye, Search, Plus } from 'lucide-react';
+import { getApiUrl } from '../api';
 
 interface Customer {
   id: number;
@@ -38,7 +39,7 @@ const Customers = () => {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/customers?limit=100', {
+      const { data } = await axios.get(getApiUrl('/customers?limit=100'), {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setCustomers(data.data || data);
@@ -66,11 +67,11 @@ const Customers = () => {
       };
 
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/customers/${editingId}`, payload, {
+        await axios.put(getApiUrl(`/customers/${editingId}`), payload, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
       } else {
-        await axios.post('http://localhost:5000/api/customers', payload, {
+        await axios.post(getApiUrl('/customers'), payload, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
       }
@@ -93,7 +94,7 @@ const Customers = () => {
         : `[${new Date().toLocaleDateString()}]: ${newNote}`;
       
       const payload = { ...viewingCustomer, notes: updatedNotes };
-      await axios.put(`http://localhost:5000/api/customers/${viewingCustomer.id}`, payload, {
+      await axios.put(getApiUrl(`/customers/${viewingCustomer.id}`), payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       
