@@ -7,8 +7,14 @@ import productRoutes from './routes/productRoutes';
 import challanRoutes from './routes/challanRoutes';
 import path from 'path';
 import fs from 'fs';
+import prisma from './utils/db';
 
 dotenv.config();
+
+// Log env status on startup
+console.log('ENV CHECK - DATABASE_URL set:', !!process.env.DATABASE_URL);
+console.log('ENV CHECK - JWT_SECRET set:', !!process.env.JWT_SECRET);
+console.log('ENV CHECK - NODE_ENV:', process.env.NODE_ENV);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +37,33 @@ app.use('/api/challans', challanRoutes);
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Mini ERP API is running...' });
+});
+
+// Health check with DB test
+app.get('/api/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ 
+      status: 'ok', 
+      db: 'connected',
+      env: {
+        DATABASE_URL: !!process.env.DATABASE_URL,
+        JWT_SECRET: !!process.env.JWT_SECRET,
+        NODE_ENV: process.env.NODE_ENV
+      }
+    });
+  } catch (err: any) {
+    res.status(500).json({ 
+      status: 'error', 
+      db: 'disconnected',
+      error: err?.message,
+      env: {
+        DATABASE_URL: !!process.env.DATABASE_URL,
+        JWT_SECRET: !!process.env.JWT_SECRET,
+        NODE_ENV: process.env.NODE_ENV
+      }
+    });
+  }
 });
 
 // Serve frontend static build in single-service production mode

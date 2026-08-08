@@ -6,7 +6,8 @@
     "dev": "npx tsx src/server.ts",
     "build": "tsc",
     "seed": "npx tsx prisma/seed_roles.ts",
-    "start": "npx prisma migrate deploy && npm run seed && node dist/server.js"
+    "migrate": "npx prisma migrate deploy",
+    "start": "npm run migrate && npm run seed && node dist/server.js"
   },
   "keywords": [],
   "author": "",
