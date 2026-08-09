@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   Plus, Trash2, ChevronDown, ChevronUp, CheckCircle2,
   XCircle, FileText, AlertTriangle, X, Loader2,
-  PackageSearch, User, Calendar, Hash, ShoppingCart
+  PackageSearch, User, Calendar, Hash, ShoppingCart, Download
 } from 'lucide-react';
 import { getApiUrl } from '../api';
 
@@ -224,6 +224,127 @@ const Challans = () => {
     } catch (err: any) {
       showToast(err.response?.data?.message ?? 'Failed to cancel challan.', 'error');
     }
+  };
+
+  // ── Download PDF ───────────────────────────────────────────────────────
+
+  const downloadChallan = (c: Challan) => {
+    const grandTotal = c.products.reduce((s, p) => s + p.unitPrice * p.quantity, 0);
+    const statusColor: Record<string, string> = {
+      DRAFT: '#92400e', CONFIRMED: '#065f46', CANCELLED: '#991b1b',
+    };
+    const statusBg: Record<string, string> = {
+      DRAFT: '#fef3c7', CONFIRMED: '#d1fae5', CANCELLED: '#fee2e2',
+    };
+    const rows = c.products.map((p, i) => `
+      <tr style="border-top:1px solid #e2e8f0;">
+        <td style="padding:10px 14px;color:#64748b;">${i + 1}</td>
+        <td style="padding:10px 14px;font-weight:600;">${p.productName}</td>
+        <td style="padding:10px 14px;color:#64748b;font-family:monospace;">${p.productSku}</td>
+        <td style="padding:10px 14px;text-align:right;">&#8377;${p.unitPrice.toFixed(2)}</td>
+        <td style="padding:10px 14px;text-align:center;font-weight:600;">${p.quantity}</td>
+        <td style="padding:10px 14px;text-align:right;font-weight:700;color:#059669;">&#8377;${(p.unitPrice * p.quantity).toFixed(2)}</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Challan ${c.challanNumber}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background:#fff; color:#0f172a; padding:40px; }
+    @media print {
+      body { padding: 20px; }
+      .no-print { display: none !important; }
+      @page { margin: 1.5cm; size: A4; }
+    }
+    .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:36px; padding-bottom:24px; border-bottom:2px solid #e2e8f0; }
+    .brand { font-size:22px; font-weight:800; color:#2563eb; letter-spacing:-0.5px; }
+    .brand-sub { font-size:12px; color:#64748b; margin-top:4px; }
+    .challan-num { font-size:13px; color:#64748b; text-align:right; }
+    .challan-num strong { display:block; font-size:20px; color:#0f172a; font-family:monospace; margin-bottom:6px; }
+    .status-badge { display:inline-block; padding:3px 12px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:${statusBg[c.status] ?? '#f1f5f9'}; color:${statusColor[c.status] ?? '#475569'}; }
+    .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+    .meta-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px; }
+    .meta-label { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
+    .meta-value { font-size:14px; font-weight:600; color:#0f172a; }
+    table { width:100%; border-collapse:collapse; font-size:13.5px; }
+    thead tr { background:#f8fafc; }
+    th { padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0; }
+    th.right { text-align:right; } th.center { text-align:center; }
+    .total-row { background:#f0fdf4; }
+    .total-row td { padding:12px 14px; font-weight:700; font-size:15px; border-top:2px solid #bbf7d0; }
+    .footer { margin-top:40px; padding-top:20px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; }
+    .print-btn { display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; padding:10px 22px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .print-btn:hover { background:#1d4ed8; }
+  </style>
+</head>
+<body>
+  <button class="print-btn no-print" onclick="window.print()">&#x1F5A8; Print / Save as PDF</button>
+
+  <div class="header">
+    <div>
+      <div class="brand">Mini ERP Portal</div>
+      <div class="brand-sub">Sales Challan Document</div>
+    </div>
+    <div class="challan-num">
+      <strong>${c.challanNumber}</strong>
+      <span class="status-badge">${c.status}</span>
+    </div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-box">
+      <div class="meta-label">Customer</div>
+      <div class="meta-value">${c.customer?.name ?? '—'}</div>
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">Date</div>
+      <div class="meta-value">${new Date(c.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">Created By</div>
+      <div class="meta-value">${c.createdBy?.name ?? '—'}</div>
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">Total Items</div>
+      <div class="meta-value">${c.products.length} product${c.products.length !== 1 ? 's' : ''} &bull; ${c.totalQuantity} units</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product</th>
+        <th>SKU</th>
+        <th class="right">Unit Price</th>
+        <th class="center">Qty</th>
+        <th class="right">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+      <tr class="total-row">
+        <td colspan="4"></td>
+        <td style="text-align:center;">${c.totalQuantity}</td>
+        <td style="text-align:right;color:#059669;">&#8377;${grandTotal.toFixed(2)}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>Generated by Mini ERP Portal</span>
+    <span>Printed on ${new Date().toLocaleString('en-IN')}</span>
+  </div>
+
+  <script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); }
   };
 
   // ── Derived ────────────────────────────────────────────────────────────
@@ -505,7 +626,7 @@ const Challans = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc' }}>
-                {['', 'Challan #', 'Customer', 'Products', 'Total Qty', 'Grand Total', 'Status', 'Created By', 'Date', 'Actions'].map(h => (
+                {['', 'Challan #', 'Customer', 'Products', 'Total Qty', 'Grand Total', 'Status', 'Created By', 'Date', 'Actions', ''].map(h => (
                   <th key={h} style={{
                     padding: '0.9rem 1rem', textAlign: 'left',
                     fontSize: '0.75rem', color: 'var(--text-muted)',
@@ -585,6 +706,23 @@ const Challans = () => {
                         {c.status !== 'DRAFT' && (
                           <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
                         )}
+                      </td>
+                      {/* Download button — always visible */}
+                      <td style={{ padding: '1rem 0.75rem' }}>
+                        <button
+                          onClick={() => downloadChallan(c)}
+                          title="Download / Print PDF"
+                          style={{
+                            background: 'none', border: '1px solid var(--surface-border)',
+                            borderRadius: '6px', cursor: 'pointer', padding: '0.3rem 0.5rem',
+                            color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem',
+                            fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary-color)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary-color)'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--surface-border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
+                        >
+                          <Download size={13} /> PDF
+                        </button>
                       </td>
                     </tr>
 
