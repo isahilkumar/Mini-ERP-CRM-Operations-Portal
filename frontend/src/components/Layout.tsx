@@ -54,11 +54,88 @@ const Layout = () => {
         </nav>
       </aside>
       <main className="main-content">
-        <header className="topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ fontWeight: 500 }}>{user?.name} ({user?.role})</span>
-            <button onClick={handleLogout} className="btn" style={{ background: 'transparent', color: '#dc2626' }}>
-              <LogOut size={20} />
+        <header className="topbar" style={{
+          height: '70px',
+          background: '#ffffff',
+          borderBottom: '1px solid var(--surface-border)',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          padding: '0 2.5rem',
+          position: 'sticky',
+          top: 0,
+          zIndex: 5,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-color)' }}>{user?.name}</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', marginTop: '2px' }}>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  background: user?.role === 'ADMIN' ? '#ffedd5' : user?.role === 'SALES' ? '#eff6ff' : user?.role === 'WAREHOUSE' ? '#f0fdf4' : '#f5f5f4',
+                  color: user?.role === 'ADMIN' ? '#c2410c' : user?.role === 'SALES' ? '#1d4ed8' : user?.role === 'WAREHOUSE' ? '#166534' : '#57534e',
+                  padding: '2px 8px',
+                  borderRadius: '999px',
+                }}>
+                  {user?.role}
+                </span>
+              </div>
+            </div>
+
+            {(() => {
+              const initials = user?.name
+                ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+                : 'U';
+              return (
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                  boxShadow: '0 2px 8px rgba(234, 88, 12, 0.2)',
+                  userSelect: 'none',
+                }}>
+                  {initials}
+                </div>
+              );
+            })()}
+
+            <div style={{ width: '1px', height: '24px', background: 'var(--surface-border)' }} />
+
+            <button
+              onClick={handleLogout}
+              title="Sign Out"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '8px',
+                borderRadius: '8px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
+                (e.currentTarget as HTMLButtonElement).style.background = '#fef2f2';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'none';
+              }}
+            >
+              <LogOut size={18} />
             </button>
           </div>
         </header>
