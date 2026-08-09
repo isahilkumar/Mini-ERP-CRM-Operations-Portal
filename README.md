@@ -20,12 +20,12 @@ A full-stack enterprise Operations Portal built for managing **Customers (CRM)**
 
 ### 🔑 Demo Login Credentials
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin** | `admin@example.com` | `password123` |
-| **Sales** | `sales@example.com` | `password123` |
-| **Warehouse** | `warehouse@example.com` | `password123` |
-| **Accounts** | `accounts@example.com` | `password123` |
+| Role | Default Name | Email | Password |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `Operations Director` | `admin@example.com` | `password123` |
+| **Sales** | `Sales Exec` | `sales@example.com` | `password123` |
+| **Warehouse** | `Warehouse Mgr` | `warehouse@example.com` | `password123` |
+| **Accounts** | `Accounts Exec` | `accounts@example.com` | `password123` |
 
 ---
 
@@ -235,12 +235,12 @@ npm run dev
 
 After running the database seed script, you can log in with:
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin** | `admin@example.com` | `password123` |
-| **Sales** | `sales@example.com` | `password123` |
-| **Warehouse** | `warehouse@example.com` | `password123` |
-| **Accounts** | `accounts@example.com` | `password123` |
+| Role | Default Name | Email | Password |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `Operations Director` | `admin@example.com` | `password123` |
+| **Sales** | `Sales Exec` | `sales@example.com` | `password123` |
+| **Warehouse** | `Warehouse Mgr` | `warehouse@example.com` | `password123` |
+| **Accounts** | `Accounts Exec` | `accounts@example.com` | `password123` |
 
 ---
 
