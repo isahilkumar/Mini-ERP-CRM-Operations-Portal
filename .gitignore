@@ -45,3 +45,11 @@ backend/uploads/products/*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Test & Local Helper Scripts
+backend/set_render_env.js
+backend/test_s3_upload.js
+backend/upload_*.js
+backend/test.js
+backend/test.ts
+

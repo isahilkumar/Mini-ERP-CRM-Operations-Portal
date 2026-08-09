@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Users, Package, FileText, LogOut, LayoutDashboard, History } from 'lucide-react';
+import { Users, Package, FileText, LogOut, LayoutDashboard, History, UserCog } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -49,6 +49,13 @@ const Layout = () => {
             <NavLink to="/stock-logs" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <History size={20} />
               Stock Logs
+            </NavLink>
+          )}
+
+          {user?.role === 'ADMIN' && (
+            <NavLink to="/accounts" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <UserCog size={20} />
+              Accounts
             </NavLink>
           )}
         </nav>

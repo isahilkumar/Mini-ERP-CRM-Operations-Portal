@@ -8,6 +8,7 @@ import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Challans from './pages/Challans';
 import StockLogs from './pages/StockLogs';
+import Accounts from './pages/Accounts';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
@@ -28,6 +29,7 @@ const App = () => {
             <Route path="products" element={<Products />} />
             <Route path="challans" element={<Challans />} />
             <Route path="stock-logs" element={<StockLogs />} />
+            <Route path="accounts" element={<Accounts />} />
           </Route>
         </Routes>
       </BrowserRouter>

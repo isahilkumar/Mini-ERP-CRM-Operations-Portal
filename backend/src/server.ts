@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes';
 import customerRoutes from './routes/customerRoutes';
 import productRoutes from './routes/productRoutes';
 import challanRoutes from './routes/challanRoutes';
+import userRoutes from './routes/userRoutes';
 import path from 'path';
 import fs from 'fs';
 import prisma from './utils/db';
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/challans', challanRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Mini ERP API is running...' });
