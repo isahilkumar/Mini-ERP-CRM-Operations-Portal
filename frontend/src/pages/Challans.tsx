@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import {
   Plus, Trash2, ChevronDown, ChevronUp, CheckCircle2,
   XCircle, FileText, AlertTriangle, X, Loader2,
-  PackageSearch, User, Calendar, Hash, ShoppingCart, Download
+  PackageSearch, User, Calendar, Hash, ShoppingCart, Download, Package
 } from 'lucide-react';
-import { getApiUrl } from '../api';
+import { getApiUrl, getImageUrl } from '../api';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface Customer { id: number; name: string; mobileNumber?: string; businessName?: string; }
-interface Product  { id: number; name: string; sku: string; unitPrice: number; currentStock: number; }
+interface Product  { id: number; name: string; sku: string; unitPrice: number; currentStock: number; imageUrl?: string | null; }
 
 interface ChallanProduct {
   id: number; productId: number; productName: string;
@@ -44,6 +44,28 @@ const StatusBadge = ({ status }: { status: string }) => {
       fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
       background: s.bg, color: s.color,
     }}>{s.label}</span>
+  );
+};
+
+// ── Product image thumbnail ────────────────────────────────────────────────
+
+const ProductThumb = ({ imageUrl, name, size = 40 }: { imageUrl?: string | null; name: string; size?: number }) => {
+  const [err, setErr] = useState(false);
+  const src = imageUrl ? getImageUrl(imageUrl) : '';
+  if (!src || err) {
+    return (
+      <div style={{
+        width: size, height: size, borderRadius: 6, flexShrink: 0,
+        background: 'linear-gradient(135deg,#e0e7ff,#c7d2fe)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1',
+      }}>
+        <Package size={size * 0.5} />
+      </div>
+    );
+  }
+  return (
+    <img src={src} alt={name} onError={() => setErr(true)}
+      style={{ width: size, height: size, borderRadius: 6, objectFit: 'cover', flexShrink: 0, background: '#f1f5f9' }} />
   );
 };
 
@@ -520,9 +542,14 @@ const Challans = () => {
                         {cart.map((item, i) => (
                           <tr key={item.product.id} style={{ borderTop: i === 0 ? 'none' : '1px solid var(--surface-border)' }}>
                             <td style={{ padding: '0.75rem 1rem' }}>
-                              <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{item.product.name}</div>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                                {item.product.sku} · ₹{item.product.unitPrice.toFixed(2)}/unit
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                <ProductThumb imageUrl={item.product.imageUrl} name={item.product.name} size={38} />
+                                <div>
+                                  <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{item.product.name}</div>
+                                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                                    {item.product.sku} · ₹{item.product.unitPrice.toFixed(2)}/unit
+                                  </div>
+                                </div>
                               </div>
                             </td>
                             <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
@@ -744,7 +771,12 @@ const Challans = () => {
                                 {c.products.map((p, idx) => (
                                   <tr key={p.id} style={{ borderTop: '1px solid var(--surface-border)' }}>
                                     <td style={{ padding: '0.6rem 0.85rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{idx + 1}</td>
-                                    <td style={{ padding: '0.6rem 0.85rem', fontWeight: 600, fontSize: '0.85rem' }}>{p.productName}</td>
+                                    <td style={{ padding: '0.6rem 0.85rem' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                        <ProductThumb imageUrl={(p as any).imageUrl} name={p.productName} size={34} />
+                                        <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.productName}</span>
+                                      </div>
+                                    </td>
                                     <td style={{ padding: '0.6rem 0.85rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontFamily: 'monospace' }}>{p.productSku}</td>
                                     <td style={{ padding: '0.6rem 0.85rem', fontSize: '0.85rem' }}>₹{p.unitPrice.toFixed(2)}</td>
                                     <td style={{ padding: '0.6rem 0.85rem', fontSize: '0.85rem', fontWeight: 600 }}>{p.quantity}</td>
