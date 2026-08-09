@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Clean Professional Light Theme */
-  --bg-color: #f8fafc;
-  --bg-gradient: #f8fafc;
+  /* Warm Orange Theme */
+  --bg-color: #fafaf9;
+  --bg-gradient: #fafaf9;
   --surface-color: #ffffff;
-  --surface-border: #e2e8f0;
-  
-  --primary-color: #2563eb; /* Professional Blue */
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  
-  --text-color: #0f172a;
-  --text-muted: #64748b;
-  
+  --surface-border: #e7e5e4;
+
+  --primary-color: #ea580c;   /* Orange-600 */
+  --primary-hover: #c2410c;   /* Orange-700 */
+  --primary-light: #fff7ed;   /* Orange-50  */
+
+  --text-color: #1c1917;
+  --text-muted: #78716c;
+
   --sidebar-width: 260px;
   --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
   --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
@@ -59,9 +59,9 @@ body {
 }
 
 @keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
 }
 
 @keyframes badgePulse {
@@ -392,7 +392,7 @@ tr:hover td {
   flex-direction: column;
   justify-content: center;
   padding: 4rem;
-  background: linear-gradient(-45deg, #2563eb, #1e40af, #3b82f6, #4f46e5);
+  background: linear-gradient(-45deg, #ea580c, #c2410c, #f97316, #d97706);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   color: white;

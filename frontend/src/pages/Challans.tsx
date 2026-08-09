@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -56,8 +56,8 @@ const ProductThumb = ({ imageUrl, name, size = 40 }: { imageUrl?: string | null;
     return (
       <div style={{
         width: size, height: size, borderRadius: 6, flexShrink: 0,
-        background: 'linear-gradient(135deg,#e0e7ff,#c7d2fe)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1',
+        background: 'linear-gradient(135deg,#ffedd5,#fed7aa)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ea580c',
       }}>
         <Package size={size * 0.5} />
       </div>
@@ -282,7 +282,7 @@ const Challans = () => {
       @page { margin: 1.5cm; size: A4; }
     }
     .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:36px; padding-bottom:24px; border-bottom:2px solid #e2e8f0; }
-    .brand { font-size:22px; font-weight:800; color:#2563eb; letter-spacing:-0.5px; }
+    .brand { font-size:22px; font-weight:800; color:#ea580c; letter-spacing:-0.5px; }
     .brand-sub { font-size:12px; color:#64748b; margin-top:4px; }
     .challan-num { font-size:13px; color:#64748b; text-align:right; }
     .challan-num strong { display:block; font-size:20px; color:#0f172a; font-family:monospace; margin-bottom:6px; }
@@ -298,8 +298,8 @@ const Challans = () => {
     .total-row { background:#f0fdf4; }
     .total-row td { padding:12px 14px; font-weight:700; font-size:15px; border-top:2px solid #bbf7d0; }
     .footer { margin-top:40px; padding-top:20px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; }
-    .print-btn { display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; padding:10px 22px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .print-btn:hover { background:#1d4ed8; }
+    .print-btn { display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; padding:10px 22px; background:#ea580c; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .print-btn:hover { background:#c2410c; }
   </style>
 </head>
 <body>
@@ -374,6 +374,7 @@ const Challans = () => {
   const cartTotal    = cart.reduce((s, i) => s + i.product.unitPrice * i.quantity, 0);
   const cartTotalQty = cart.reduce((s, i) => s + i.quantity, 0);
   const canCreate    = user?.role !== 'ACCOUNTS';
+  const canDownload  = user?.role === 'ADMIN' || user?.role === 'ACCOUNTS';
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -653,8 +654,8 @@ const Challans = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc' }}>
-                {['', 'Challan #', 'Customer', 'Products', 'Total Qty', 'Grand Total', 'Status', 'Created By', 'Date', 'Actions', ''].map(h => (
-                  <th key={h} style={{
+                {['', 'Challan #', 'Customer', 'Products', 'Total Qty', 'Grand Total', 'Status', 'Created By', 'Date', 'Actions', ''].map((h, i) => (
+                  <th key={i} style={{
                     padding: '0.9rem 1rem', textAlign: 'left',
                     fontSize: '0.75rem', color: 'var(--text-muted)',
                     fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -668,9 +669,8 @@ const Challans = () => {
                 const grandTotal = c.products.reduce((s, p) => s + p.unitPrice * p.quantity, 0);
                 const isExpanded = expandedId === c.id;
                 return (
-                  <>
+                  <Fragment key={c.id}>
                     <tr
-                      key={c.id}
                       style={{ borderBottom: isExpanded ? 'none' : '1px solid var(--surface-border)', transition: 'background 0.15s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
                       onMouseLeave={e => (e.currentTarget.style.background = '')}
@@ -734,22 +734,26 @@ const Challans = () => {
                           <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
                         )}
                       </td>
-                      {/* Download button — always visible */}
+                      {/* Download button — ADMIN & ACCOUNTS only */}
                       <td style={{ padding: '1rem 0.75rem' }}>
-                        <button
-                          onClick={() => downloadChallan(c)}
-                          title="Download / Print PDF"
-                          style={{
-                            background: 'none', border: '1px solid var(--surface-border)',
-                            borderRadius: '6px', cursor: 'pointer', padding: '0.3rem 0.5rem',
-                            color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem',
-                            fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
-                          }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary-color)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary-color)'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--surface-border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
-                        >
-                          <Download size={13} /> PDF
-                        </button>
+                        {canDownload ? (
+                          <button
+                            onClick={() => downloadChallan(c)}
+                            title="Download / Print PDF"
+                            style={{
+                              background: 'none', border: '1px solid var(--surface-border)',
+                              borderRadius: '6px', cursor: 'pointer', padding: '0.3rem 0.5rem',
+                              color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem',
+                              fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary-color)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary-color)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--surface-border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
+                          >
+                            <Download size={13} /> PDF
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
+                        )}
                       </td>
                     </tr>
 
@@ -773,7 +777,7 @@ const Challans = () => {
                                     <td style={{ padding: '0.6rem 0.85rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{idx + 1}</td>
                                     <td style={{ padding: '0.6rem 0.85rem' }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                        <ProductThumb imageUrl={(p as any).imageUrl} name={p.productName} size={34} />
+                                        <ProductThumb imageUrl={products.find(pr => pr.id === p.productId)?.imageUrl} name={p.productName} size={34} />
                                         <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.productName}</span>
                                       </div>
                                     </td>
@@ -789,7 +793,7 @@ const Challans = () => {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

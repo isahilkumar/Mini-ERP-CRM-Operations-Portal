@@ -7,27 +7,12 @@ import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-import { S3Client } from '@aws-sdk/client-s3';
+import { s3, isS3Configured } from '../utils/s3';
 import multerS3 from 'multer-s3';
-
-const isS3Configured = !!(
-  process.env.AWS_REGION &&
-  process.env.AWS_ACCESS_KEY_ID &&
-  process.env.AWS_SECRET_ACCESS_KEY &&
-  process.env.AWS_S3_BUCKET_NAME
-);
 
 let storage: multer.StorageEngine;
 
-if (isS3Configured) {
-  const s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-    },
-  });
-
+if (isS3Configured && s3) {
   storage = multerS3({
     s3: s3,
     bucket: process.env.AWS_S3_BUCKET_NAME || '',
@@ -63,7 +48,7 @@ router.use(protect);
 router.get('/stock-logs', authorize('ADMIN', 'WAREHOUSE'), getStockLogs);
 
 router.route('/')
-  .get(authorize('ADMIN', 'SALES', 'WAREHOUSE'), getProducts)
+  .get(authorize('ADMIN', 'SALES', 'WAREHOUSE', 'ACCOUNTS'), getProducts)
   .post(authorize('ADMIN', 'WAREHOUSE'), upload.single('image'), createProduct);
 
 router.route('/:id')

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/db';
+import { getPresignedUrl } from '../utils/s3';
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
@@ -22,11 +23,18 @@ export const getProducts = async (req: Request, res: Response) => {
       take: limit,
       orderBy: { createdAt: 'desc' }
     });
+
+    const productsWithSignedUrls = await Promise.all(
+      products.map(async (p) => ({
+        ...p,
+        imageUrl: await getPresignedUrl(p.imageUrl)
+      }))
+    );
     
     const total = await prisma.product.count({ where });
 
     res.json({
-      data: products,
+      data: productsWithSignedUrls,
       pagination: {
         total,
         page,
@@ -55,6 +63,11 @@ export const createProduct = async (req: Request, res: Response) => {
     const product = await prisma.product.create({
       data: productData,
     });
+
+    if (product.imageUrl) {
+      product.imageUrl = await getPresignedUrl(product.imageUrl);
+    }
+    
     res.status(201).json(product);
   } catch (error) {
     console.error('Error creating product:', error);
@@ -79,6 +92,11 @@ export const updateProduct = async (req: Request, res: Response) => {
       where: { id: Number(id) },
       data: productData,
     });
+
+    if (product.imageUrl) {
+      product.imageUrl = await getPresignedUrl(product.imageUrl);
+    }
+
     res.json(product);
   } catch (error) {
     console.error('Error updating product:', error);

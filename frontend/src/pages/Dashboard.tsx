@@ -58,11 +58,11 @@ const Dashboard = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
         {canSeeCustomers && (
-          <div className="stat-card animate-slide-up" style={{ borderTop: '4px solid #4F46E5', animationDelay: '0.3s' }}>
-            <Users className="stat-icon" size={120} color="#4F46E5" />
+          <div className="stat-card animate-slide-up" style={{ borderTop: '4px solid #ea580c', animationDelay: '0.3s' }}>
+            <Users className="stat-icon" size={120} color="#ea580c" />
             <h3 style={{ color: 'var(--text-muted)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Customers</h3>
             <p style={{ fontSize: '3rem', fontWeight: 800, margin: '0.5rem 0' }}>{stats.customers}</p>
-            <Link to="/customers" style={{ color: '#4F46E5', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Link to="/customers" style={{ color: '#ea580c', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               View Database <ArrowRight size={16} />
             </Link>
           </div>
@@ -97,7 +97,7 @@ const Dashboard = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
             {(user?.role === 'ADMIN' || user?.role === 'SALES') && (
               <Link to="/customers" className="quick-action-card animate-slide-up" style={{ animationDelay: '0.7s' }}>
-                <div className="qa-icon-wrapper" style={{ background: 'rgba(79, 70, 229, 0.1)', color: '#4F46E5' }}>
+                <div className="qa-icon-wrapper" style={{ background: 'rgba(234, 88, 12, 0.1)', color: '#ea580c' }}>
                   <Users size={24} />
                 </div>
                 <div className="qa-text-wrapper">

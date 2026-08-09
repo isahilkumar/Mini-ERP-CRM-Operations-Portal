@@ -15,7 +15,7 @@ const Layout = () => {
     <div className="app-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <Package size={24} color="#4F46E5" />
+          <Package size={24} color="#ea580c" />
           Mini ERP
         </div>
         <nav className="sidebar-nav">
