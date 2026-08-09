@@ -10,13 +10,15 @@
 [![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://mini-erp-crm-operations-portal-v50w.onrender.com)
 [![AWS S3](https://img.shields.io/badge/Images%20on-AWS%20S3-FF9900?style=for-the-badge&logo=amazons3&logoColor=white)](https://aws.amazon.com/s3/)
 
-A full-stack enterprise Operations Portal built for managing **Customers (CRM)**, **Products & Inventory**, **Stock Movements**, and **Sales Challans** with strict **Role-Based Access Control (RBAC)**.
+A full-stack enterprise Operations Portal built for managing **Customers (CRM)**, **Products & Inventory**, **Stock Movements**, **Sales Challans**, and **User Accounts** with strict **Role-Based Access Control (RBAC)**.
+
+---
 
 ## 🌐 Live Demo
 
 > **🚀 Production URL:** [https://mini-erp-crm-operations-portal-v50w.onrender.com](https://mini-erp-crm-operations-portal-v50w.onrender.com)
 
-> ⚠️ **Note:** Hosted on Render's free tier — the server may take **~30 seconds to wake up** on first visit after inactivity.
+> ℹ️ **Note:** Hosted on Render's free tier — the server may take a short moment to wake up on first visit after extended inactivity.
 
 ### 🔑 Demo Login Credentials
 
@@ -29,57 +31,65 @@ A full-stack enterprise Operations Portal built for managing **Customers (CRM)**
 
 ---
 
-
-
 ## 🚀 Features
 
 ### 🔐 1. Role-Based Access Control (RBAC)
-- **Admin**: Complete system access across CRM, Inventory, Sales Challans, and Stock Audit Logs.
+- **Admin**: Complete system access across CRM, Inventory, Sales Challans, Stock Audit Logs, and User Account Management.
 - **Sales**: Manage customer accounts, add interaction notes, view product catalog, and issue Sales Challans.
 - **Warehouse**: Full inventory management, stock level updates, product image uploads, and movement audit logs.
 - **Accounts**: Review sales challans, track customer order histories, and audit transaction records.
 
-### 💼 2. Customer CRM
+### 👑 2. Admin Accounts Control Panel _(New)_
+The Admin has a dedicated **Accounts Management** page with full control over all user accounts in the system:
+
+- **Create Accounts** — Add new user accounts with any role (Sales, Warehouse, Accounts, or Admin).
+- **Edit Accounts** — Update any user's name, email, role, or reset their password.
+- **Delete Accounts** — Remove accounts with integrity checks (blocks deletion if user has linked transactions).
+- **ON / OFF Status Toggle** — Instantly activate or deactivate any account. Deactivated accounts are blocked from logging in with a clear error message.
+- **Go Inside Account (Impersonation)** — Admin can instantly switch into any user's session to view and operate the portal exactly as that user sees it, without needing their password.
+- **Exit & Return to Admin** — A persistent top banner displays while impersonating with a one-click **"Exit & Return to Admin"** button.
+
+### 💼 3. Customer CRM
 - Chronological customer interaction logs & follow-up notes.
 - Customer lifecycle management (Leads, Active Accounts, Inactive Accounts).
 - Complete transaction history and active sales orders per customer.
 
-### 📦 3. Inventory & Stock Tracking
+### 📦 4. Inventory & Stock Tracking
 - Real-time inventory tracking with low-stock alerts.
 - Product catalog management with image upload capabilities.
 - Immutable automated stock movement logging (IN, OUT, ADJUSTMENT).
+
+### 🧾 5. Sales Challans & Cart System
+- Multi-item interactive sales order/challan builder.
+- Automatic stock deduction upon challan confirmation.
+- **Database Transaction Protection**: Wrapped in SQL transactions to prevent negative stock and race conditions.
 
 ### ☁️ 6. AWS S3 Cloud Image Storage
 - Product images are uploaded directly to **AWS S3** for permanent, scalable cloud storage.
 - Supports **dynamic storage switching**: automatically uses S3 in production (when AWS env vars are configured) and falls back to local disk in development.
 - Uses `@aws-sdk/client-s3` + `multer-s3` for seamless streaming uploads directly to S3 — no intermediate disk writes.
-- Images are publicly accessible via S3 CDN URLs (e.g., `https://bucket.s3.region.amazonaws.com/products/...`).
 - Full **graceful fallback**: if AWS credentials are not set, the app continues to work using local `uploads/` directory.
 
-### 🧾 4. Sales Challans & Cart System
-- Multi-item interactive sales order/challan builder.
-- Automatic stock deduction upon challan confirmation.
-- **Database Transaction Protection**: Wrapped in SQL transactions to prevent negative stock and race conditions.
-
-### 🎨 5. Modern UI & UX
-- Custom dark/light mode polished enterprise interface.
-- Dynamic data tables, search filters, modal dialogs, and responsive layout.
+### 🎨 7. Modern UI & UX
+- Custom polished enterprise interface with smooth animations and micro-interactions.
+- Dynamic data tables, search filters, role-colored badges, and responsive layout.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React 18 (Vite) + TypeScript
+- **Framework**: React 19 (Vite) + TypeScript
 - **Styling**: Modern Vanilla CSS with CSS custom properties & utility animations
 - **Icons**: Lucide React Icons
 - **HTTP Client**: Axios
 
 ### Backend
-- **Runtime**: Node.js & Express (TypeScript)
+- **Runtime**: Node.js & Express 5 (TypeScript)
 - **ORM**: Prisma ORM
 - **Database**: PostgreSQL (production) / SQLite (local dev)
 - **Authentication**: JWT (JSON Web Tokens) & `bcryptjs` password hashing
+- **Compression**: `compression` middleware (Gzip/Deflate for ~70% smaller asset transfers)
 - **File Uploads**: `multer` + `multer-s3` — S3 cloud storage with local disk fallback
 
 ### Cloud & Infrastructure
@@ -96,27 +106,43 @@ A full-stack enterprise Operations Portal built for managing **Customers (CRM)**
 Mini-ERP-CRM-Operations-Portal/
 ├── backend/
 │   ├── prisma/
-│   │   └── schema.prisma         # Prisma Data Models & Database Schema
+│   │   ├── schema.prisma               # Prisma Data Models & Database Schema
+│   │   ├── migrations/                 # SQL migration history
+│   │   └── seed_roles.ts               # Default user seed script
 │   ├── src/
-│   │   ├── controllers/          # Request handlers (Auth, CRM, Products, Challans)
-│   │   ├── middleware/           # Auth & RBAC validation middleware
-│   │   ├── routes/               # Express API routing definitions
-│   │   ├── utils/                # Prisma client initialization
-│   │   └── server.ts             # Application entry point
-│   ├── uploads/                  # Product image storage directory
-│   ├── .env.example              # Backend environment variables template
+│   │   ├── controllers/                # Request handlers
+│   │   │   ├── authController.ts       # Login, Register
+│   │   │   ├── userController.ts       # User CRUD + Impersonation
+│   │   │   ├── customerController.ts   # CRM handlers
+│   │   │   ├── productController.ts    # Inventory handlers
+│   │   │   └── challanController.ts    # Sales Challan handlers
+│   │   ├── middleware/
+│   │   │   └── authMiddleware.ts       # JWT protect & RBAC authorize
+│   │   ├── routes/                     # Express API routing definitions
+│   │   ├── utils/                      # Prisma client, S3 config
+│   │   └── server.ts                   # Application entry point
+│   ├── uploads/                        # Local product image storage (fallback)
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/           # Reusable UI components & Sidebar layout
-│   │   ├── context/              # Authentication context provider
-│   │   ├── pages/                # Operations portal views (Dashboard, Products, CRM, Challans)
-│   │   ├── App.tsx               # App routing & protected routes
-│   │   └── index.css             # Main stylesheet & global themes
-│   ├── .env.example              # Frontend environment variables template
+│   │   ├── components/
+│   │   │   └── Layout.tsx              # Sidebar, topbar & impersonation banner
+│   │   ├── context/
+│   │   │   └── AuthContext.tsx         # Auth state + impersonation handlers
+│   │   ├── pages/
+│   │   │   ├── Dashboard.tsx           # Role-aware summary dashboard
+│   │   │   ├── Accounts.tsx            # Admin user management panel
+│   │   │   ├── Customers.tsx           # CRM management
+│   │   │   ├── Products.tsx            # Inventory & product catalog
+│   │   │   ├── Challans.tsx            # Sales challans
+│   │   │   ├── StockLogs.tsx           # Inventory audit trail
+│   │   │   └── Login.tsx               # Auth page
+│   │   ├── App.tsx                     # App routing & protected routes
+│   │   └── index.css                   # Main stylesheet & global themes
 │   └── package.json
-├── docker-compose.yml            # Docker containerization configuration
-├── Mini_ERP_Postman_Collection.json # Postman API Testing Collection
+├── render.yaml                         # Render IaC deployment config
+├── docker-compose.yml                  # Docker PostgreSQL container
+├── Mini_ERP_Postman_Collection.json    # Postman API Testing Collection
 └── README.md
 ```
 
@@ -126,14 +152,14 @@ Mini-ERP-CRM-Operations-Portal/
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18 or higher)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [npm](https://www.npmjs.com/)
 - [PostgreSQL](https://www.postgresql.org/) (or SQLite for local dev)
 
 ---
 
 ### 1. Environment Setup
 
-Create `.env` files in both the `backend/` and `frontend/` directories.
+Create `.env` files in the `backend/` directory:
 
 #### **Backend (`backend/.env`)**
 ```env
@@ -142,7 +168,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mini_erp?schema=publ
 JWT_SECRET="super_secret_jwt_key_change_in_production"
 
 # ☁️ AWS S3 — Optional (for persistent cloud image storage)
-# If these are NOT set, product images fall back to local disk storage
+# If NOT set, product images fall back to local disk storage
 AWS_ACCESS_KEY_ID="your_aws_access_key_id"
 AWS_SECRET_ACCESS_KEY="your_aws_secret_access_key"
 AWS_REGION="eu-north-1"
@@ -151,52 +177,14 @@ AWS_S3_BUCKET_NAME="your-s3-bucket-name"
 
 #### **Frontend (`frontend/.env`)**
 ```env
-# Optional: only needed if deploying frontend separately (not via single Render service)
+# Optional: only needed if deploying frontend separately
 # Leave empty to use relative /api path (recommended for single-service deployment)
 VITE_API_BASE_URL="http://localhost:5000/api"
 ```
 
 ---
 
-### 💡 AWS S3 Setup (Optional — for Production Image Storage)
-
-> Skip this section if you just want to run the app locally or are okay with local disk storage.
-
-1. **Create an S3 Bucket** in [AWS Console](https://s3.console.aws.amazon.com/) in your preferred region.
-
-2. **Set Bucket Permissions** — Enable public read access for product images:
-   - Uncheck "Block all public access"
-   - Add this Bucket Policy:
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [{
-       "Effect": "Allow",
-       "Principal": "*",
-       "Action": "s3:GetObject",
-       "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
-     }]
-   }
-   ```
-
-3. **Create an IAM User** with `AmazonS3FullAccess` policy and copy the Access Key ID and Secret Access Key.
-
-4. **Add the credentials** to your `backend/.env` file or Render Environment Variables.
-
-5. **That's it!** The app automatically detects the credentials at startup and switches to S3 storage:
-   ```
-   Using AWS S3 storage for product uploads.
-   ```
-   Without credentials:
-   ```
-   Using local disk storage for product uploads.
-   ```
-
-
-
-### 2. Backend Installation & Database Migration
-
-Navigate to the backend directory and run:
+### 2. Backend Setup
 
 ```bash
 cd backend
@@ -216,15 +204,11 @@ npm run dev
 
 ---
 
-### 3. Frontend Installation
-
-In a new terminal window, navigate to the frontend directory:
+### 3. Frontend Setup
 
 ```bash
 cd frontend
 npm install
-
-# Start Vite dev server
 npm run dev
 ```
 > The frontend application will run at: `http://localhost:5173`
@@ -233,42 +217,44 @@ npm run dev
 
 ## 🔑 Default Seed Credentials
 
-After running the database seed script, you can log in with:
-
-| Role | Default Name | Email | Password |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `Operations Director` | `admin@example.com` | `password123` |
-| **Sales** | `Sales Exec` | `sales@example.com` | `password123` |
-| **Warehouse** | `Warehouse Mgr` | `warehouse@example.com` | `password123` |
-| **Accounts** | `Accounts Exec` | `accounts@example.com` | `password123` |
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@example.com` | `password123` |
+| **Sales** | `sales@example.com` | `password123` |
+| **Warehouse** | `warehouse@example.com` | `password123` |
+| **Accounts** | `accounts@example.com` | `password123` |
 
 ---
 
-## 🧪 API Endpoints & Testing
+## 🧪 API Endpoints
 
-A complete **Postman Collection** is included in the project root: [`Mini_ERP_Postman_Collection.json`](./Mini_ERP_Postman_Collection.json). Import this file directly into Postman to test all routes.
+A complete **Postman Collection** is included: [`Mini_ERP_Postman_Collection.json`](./Mini_ERP_Postman_Collection.json).
 
 ### Key Routes Overview
 
 | Category | Method | Endpoint | Description | Access |
 | :--- | :--- | :--- | :--- | :--- |
-| **Auth** | `POST` | `/api/auth/register` | Register a new user | Public / Admin |
-| **Auth** | `POST` | `/api/auth/login` | Authenticate user & receive JWT token | Public |
+| **Auth** | `POST` | `/api/auth/login` | Authenticate user & receive JWT | Public |
+| **Auth** | `POST` | `/api/auth/register` | Register a new user | Public |
+| **Users** | `GET` | `/api/users` | List all user accounts | Admin |
+| **Users** | `POST` | `/api/users` | Create a new user account | Admin |
+| **Users** | `PUT` | `/api/users/:id` | Update user details / toggle ON-OFF | Admin |
+| **Users** | `DELETE` | `/api/users/:id` | Delete user account | Admin |
+| **Users** | `POST` | `/api/users/:id/impersonate` | Enter another user's session | Admin |
 | **CRM** | `GET` | `/api/customers` | Fetch all customer accounts | Admin, Sales, Accounts |
 | **CRM** | `POST` | `/api/customers` | Create a new customer lead | Admin, Sales |
-| **CRM** | `POST` | `/api/customers/:id/notes` | Append follow-up note to customer | Admin, Sales |
+| **CRM** | `PUT` | `/api/customers/:id` | Update customer details / add note | Admin, Sales |
 | **Products** | `GET` | `/api/products` | Get inventory list with stock levels | All Roles |
 | **Products** | `POST` | `/api/products` | Create product with image upload | Admin, Warehouse |
-| **Products** | `PUT` | `/api/products/:id` | Update product details / adjust stock | Admin, Warehouse |
+| **Products** | `PUT` | `/api/products/:id` | Update product / adjust stock | Admin, Warehouse |
 | **Challans** | `GET` | `/api/challans` | List all sales challans | All Roles |
 | **Challans** | `POST` | `/api/challans` | Create & issue new sales challan | Admin, Sales |
-| **Logs** | `GET` | `/api/stock-logs` | Audit trail of inventory movements | Admin, Warehouse |
 
 ---
 
 ## 🐳 Docker Setup (Optional)
 
-You can run the PostgreSQL database via Docker:
+Run PostgreSQL locally via Docker:
 
 ```bash
 docker-compose up -d
@@ -280,7 +266,7 @@ docker-compose up -d
 
 - **Preventing Negative Stock**: When a sales challan is created, the system checks product stock availability within a database transaction block (`prisma.$transaction`).
 - **Atomic Operations**: If stock for any item in the order is insufficient, the entire transaction rolls back cleanly, preventing partial updates.
-- **Automated Stock Audit**: Every stock deduction automatically inserts a row into the `StockLog` table with historical timestamp and reference details.
+- **Automated Stock Audit**: Every stock deduction automatically inserts a row into the `StockLog` table with a historical timestamp and reference details.
 
 ---
 
