@@ -10,7 +10,8 @@ import Challans from './pages/Challans';
 import StockLogs from './pages/StockLogs';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null; // wait until localStorage is read
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
