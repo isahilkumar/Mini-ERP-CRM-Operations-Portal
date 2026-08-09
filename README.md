@@ -7,14 +7,14 @@
 [![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://mini-erp-crm-operations-portalmini-erp.onrender.com)
+[![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://mini-erp-crm-operations-portal-v50w.onrender.com)
 [![AWS S3](https://img.shields.io/badge/Images%20on-AWS%20S3-FF9900?style=for-the-badge&logo=amazons3&logoColor=white)](https://aws.amazon.com/s3/)
 
 A full-stack enterprise Operations Portal built for managing **Customers (CRM)**, **Products & Inventory**, **Stock Movements**, and **Sales Challans** with strict **Role-Based Access Control (RBAC)**.
 
 ## 🌐 Live Demo
 
-> **🚀 Production URL:** [https://mini-erp-crm-operations-portalmini-erp.onrender.com](https://mini-erp-crm-operations-portalmini-erp.onrender.com)
+> **🚀 Production URL:** [https://mini-erp-crm-operations-portal-v50w.onrender.com](https://mini-erp-crm-operations-portal-v50w.onrender.com)
 
 > ⚠️ **Note:** Hosted on Render's free tier — the server may take **~30 seconds to wake up** on first visit after inactivity.
 
