@@ -3,8 +3,8 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import {
   Edit, Plus, Package, Search, AlertTriangle,
-  LayoutGrid, List, X, MapPin, Tag, TrendingUp,
-  CheckCircle, XCircle, Layers, IndianRupee, BarChart2,
+  LayoutGrid, List, X, MapPin, Tag,
+  CheckCircle, XCircle, Layers, IndianRupee,
 } from 'lucide-react';
 import { getApiUrl, getImageUrl } from '../api';
 
