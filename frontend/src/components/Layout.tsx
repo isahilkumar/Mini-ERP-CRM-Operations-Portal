@@ -1,9 +1,9 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Users, Package, FileText, LogOut, LayoutDashboard, History, UserCog } from 'lucide-react';
+import { Users, Package, FileText, LogOut, LayoutDashboard, History, UserCog, ShieldAlert, ArrowLeft } from 'lucide-react';
 
 const Layout = () => {
-  const { user, logout } = useAuth();
+  const { user, originalAdminUser, exitImpersonation, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -61,6 +61,51 @@ const Layout = () => {
         </nav>
       </aside>
       <main className="main-content">
+        {originalAdminUser && (
+          <div style={{
+            background: 'linear-gradient(90deg, #ea580c 0%, #c2410c 100%)',
+            color: '#ffffff',
+            padding: '0.6rem 2.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ShieldAlert size={18} />
+              <span>
+                Viewing as <strong>{user?.name}</strong> ({user?.role}) — Logged in via Admin (<strong>{originalAdminUser.name}</strong>)
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                exitImpersonation();
+                navigate('/accounts');
+              }}
+              style={{
+                background: '#ffffff',
+                color: '#c2410c',
+                border: 'none',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '6px',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
+              }}
+            >
+              <ArrowLeft size={16} /> Exit & Return to Admin
+            </button>
+          </div>
+        )}
         <header className="topbar" style={{
           height: '70px',
           background: '#ffffff',

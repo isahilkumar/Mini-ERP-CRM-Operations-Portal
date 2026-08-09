@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import prisma from '../utils/db';
 
 // Interface to type req.user if added by protect middleware
@@ -15,6 +16,7 @@ export const getUsers = async (req: Request, res: Response) => {
         email: true,
         name: true,
         role: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -29,7 +31,7 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, isActive } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Please provide all required fields' });
@@ -56,12 +58,14 @@ export const createUser = async (req: Request, res: Response) => {
         email,
         password: hashedPassword,
         role,
+        isActive: isActive !== undefined ? Boolean(isActive) : true,
       },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -77,7 +81,7 @@ export const createUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, isActive } = req.body;
 
     const userToUpdate = await prisma.user.findUnique({ where: { id: Number(id) } });
     if (!userToUpdate) {
@@ -120,6 +124,12 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       const salt = await bcrypt.genSalt(10);
       updateData.password = await bcrypt.hash(password, salt);
     }
+    if (typeof isActive === 'boolean') {
+      if (userToUpdate.id === req.user?.id && isActive === false) {
+        return res.status(400).json({ message: 'You cannot deactivate your own admin account.' });
+      }
+      updateData.isActive = isActive;
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: Number(id) },
@@ -129,6 +139,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
         email: true,
         name: true,
         role: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -137,6 +148,39 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     res.json(updatedUser);
   } catch (error) {
     console.error('updateUser error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const impersonateUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const targetUser = await prisma.user.findUnique({ where: { id: Number(id) } });
+
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (targetUser.isActive === false) {
+      return res.status(400).json({ message: 'Cannot impersonate a deactivated account.' });
+    }
+
+    const token = jwt.sign(
+      { id: targetUser.id, role: targetUser.role },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '30d' }
+    );
+
+    res.json({
+      id: targetUser.id,
+      name: targetUser.name,
+      email: targetUser.email,
+      role: targetUser.role,
+      isActive: targetUser.isActive,
+      token,
+    });
+  } catch (error) {
+    console.error('impersonateUser error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

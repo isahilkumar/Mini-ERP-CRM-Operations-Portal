@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Edit, Trash2, Search, Plus, ShieldAlert } from 'lucide-react';
+import { Edit, Trash2, Search, Plus, ShieldAlert, LogIn, ToggleLeft, ToggleRight } from 'lucide-react';
 import { getApiUrl } from '../api';
 
 interface UserAccount {
@@ -9,6 +10,7 @@ interface UserAccount {
   name: string;
   email: string;
   role: string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,12 +24,15 @@ const Accounts = () => {
     name: '',
     email: '',
     password: '',
-    role: 'SALES'
+    role: 'SALES',
+    isActive: true,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { user: currentUser } = useAuth();
+  
+  const { user: currentUser, impersonate } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (currentUser?.role === 'ADMIN') {
@@ -56,11 +61,54 @@ const Accounts = () => {
       name: u.name,
       email: u.email,
       password: '', // Password empty on edit unless user types a new one
-      role: u.role
+      role: u.role,
+      isActive: u.isActive !== undefined ? u.isActive : true,
     });
     setError('');
     setSuccess('');
     setShowForm(true);
+  };
+
+  const handleToggleStatus = async (u: UserAccount) => {
+    if (u.id === currentUser?.id) {
+      alert('You cannot turn OFF your own admin account.');
+      return;
+    }
+    const newStatus = u.isActive === false ? true : false;
+    try {
+      setError('');
+      setSuccess('');
+      await axios.put(getApiUrl(`/users/${u.id}`), { isActive: newStatus }, {
+        headers: { Authorization: `Bearer ${currentUser?.token}` }
+      });
+      setSuccess(`Status for ${u.name} toggled to ${newStatus ? 'ON (Active)' : 'OFF (Inactive)'}`);
+      fetchUsers();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to update account status');
+    }
+  };
+
+  const handleImpersonate = async (u: UserAccount) => {
+    if (u.id === currentUser?.id) {
+      alert('You are already logged in as this Admin account.');
+      return;
+    }
+    if (u.isActive === false) {
+      alert('Cannot enter a deactivated (OFF) account. Please toggle status to ON first.');
+      return;
+    }
+    try {
+      setError('');
+      const { data } = await axios.post(getApiUrl(`/users/${u.id}/impersonate`), {}, {
+        headers: { Authorization: `Bearer ${currentUser?.token}` }
+      });
+      impersonate(data);
+      navigate('/');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to enter account view');
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -106,7 +154,8 @@ const Accounts = () => {
       const payload: any = {
         name: formData.name,
         email: formData.email,
-        role: formData.role
+        role: formData.role,
+        isActive: formData.isActive
       };
       if (formData.password) {
         payload.password = formData.password;
@@ -126,7 +175,7 @@ const Accounts = () => {
 
       setShowForm(false);
       setEditingId(null);
-      setFormData({ name: '', email: '', password: '', role: 'SALES' });
+      setFormData({ name: '', email: '', password: '', role: 'SALES', isActive: true });
       fetchUsers();
     } catch (err: any) {
       console.error(err);
@@ -171,9 +220,9 @@ const Accounts = () => {
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
-          <h1>Accounts Management</h1>
+          <h1>Accounts Control Panel</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            Manage user accounts, change roles, and reset credentials.
+            Full admin control: Toggle ON/OFF account status, enter other user accounts, edit details and reset roles.
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -193,7 +242,7 @@ const Accounts = () => {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ name: '', email: '', password: '', role: 'SALES' });
+              setFormData({ name: '', email: '', password: '', role: 'SALES', isActive: true });
               setError('');
               setSuccess('');
             }}
@@ -269,6 +318,33 @@ const Accounts = () => {
                 <option value="ADMIN">Admin</option>
               </select>
             </div>
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <label className="form-label">Account Status</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: 0
+                  }}
+                >
+                  {formData.isActive ? (
+                    <ToggleRight size={32} color="#10b981" />
+                  ) : (
+                    <ToggleLeft size={32} color="#9ca3af" />
+                  )}
+                </button>
+                <span style={{ fontWeight: 600, color: formData.isActive ? '#10b981' : '#6b7280' }}>
+                  {formData.isActive ? 'Active (ON)' : 'Inactive (OFF)'}
+                </span>
+              </div>
+            </div>
           </div>
           
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
@@ -281,7 +357,7 @@ const Accounts = () => {
               onClick={() => {
                 setShowForm(false);
                 setEditingId(null);
-                setFormData({ name: '', email: '', password: '', role: 'SALES' });
+                setFormData({ name: '', email: '', password: '', role: 'SALES', isActive: true });
                 setError('');
               }}
               style={{ background: '#f5f5f4', color: '#57534e' }}
@@ -300,6 +376,7 @@ const Accounts = () => {
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Status (ON/OFF)</th>
               <th>Created Date</th>
               <th>Actions</th>
             </tr>
@@ -307,15 +384,15 @@ const Accounts = () => {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
                   Loading user accounts...
                 </td>
               </tr>
             ) : filteredUsers.map(u => (
-              <tr key={u.id} style={{ background: u.id === currentUser?.id ? '#fefcbf' : 'none' }}>
+              <tr key={u.id} style={{ background: u.id === currentUser?.id ? '#fffbeb' : 'none' }}>
                 <td>{u.id}</td>
                 <td style={{ fontWeight: 600 }}>
-                  {u.name} {u.id === currentUser?.id && <span style={{ fontSize: '0.75rem', color: '#975a16', fontWeight: 'bold' }}>(You)</span>}
+                  {u.name} {u.id === currentUser?.id && <span style={{ fontSize: '0.75rem', color: '#c2410c', fontWeight: 'bold' }}>(You)</span>}
                 </td>
                 <td>{u.email}</td>
                 <td>
@@ -333,32 +410,103 @@ const Accounts = () => {
                     {u.role}
                   </span>
                 </td>
-                <td>{new Date(u.createdAt).toLocaleDateString()}</td>
                 <td>
                   <button
-                    className="btn"
-                    style={{ padding: '0.25rem', marginRight: '0.5rem', background: 'transparent', color: '#10b981' }}
-                    onClick={() => handleEdit(u)}
-                    title="Edit User"
+                    onClick={() => handleToggleStatus(u)}
+                    disabled={u.id === currentUser?.id}
+                    title={u.id === currentUser?.id ? 'Cannot turn OFF your own admin account' : 'Click to toggle status ON/OFF'}
+                    style={{
+                      border: 'none',
+                      background: 'none',
+                      cursor: u.id === currentUser?.id ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '2px 6px',
+                      borderRadius: '6px',
+                      transition: 'background 0.2s',
+                    }}
                   >
-                    <Edit size={18} />
+                    {u.isActive !== false ? (
+                      <span style={{
+                        background: '#d1fae5',
+                        color: '#047857',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} /> ON
+                      </span>
+                    ) : (
+                      <span style={{
+                        background: '#f3f4f6',
+                        color: '#4b5563',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9ca3af' }} /> OFF
+                      </span>
+                    )}
                   </button>
-                  {u.id !== currentUser?.id && (
+                </td>
+                <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    {u.id !== currentUser?.id && (
+                      <button
+                        className="btn"
+                        style={{
+                          padding: '0.3rem 0.6rem',
+                          background: '#fff7ed',
+                          color: '#ea580c',
+                          border: '1px solid #ffedd5',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        onClick={() => handleImpersonate(u)}
+                        title={`Go Inside ${u.name}'s account view`}
+                      >
+                        <LogIn size={15} /> Go Inside
+                      </button>
+                    )}
                     <button
                       className="btn"
-                      style={{ padding: '0.25rem', background: 'transparent', color: '#ef4444' }}
-                      onClick={() => handleDelete(u.id)}
-                      title="Delete User"
+                      style={{ padding: '0.25rem', background: 'transparent', color: '#10b981' }}
+                      onClick={() => handleEdit(u)}
+                      title="Edit User"
                     >
-                      <Trash2 size={18} />
+                      <Edit size={18} />
                     </button>
-                  )}
+                    {u.id !== currentUser?.id && (
+                      <button
+                        className="btn"
+                        style={{ padding: '0.25rem', background: 'transparent', color: '#ef4444' }}
+                        onClick={() => handleDelete(u.id)}
+                        title="Delete User"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
             {!isLoading && filteredUsers.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
                   No user accounts found.
                 </td>
               </tr>

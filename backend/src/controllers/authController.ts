@@ -16,6 +16,9 @@ export const login = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      if (user.isActive === false) {
+        return res.status(403).json({ message: 'Your account has been deactivated. Please contact an administrator.' });
+      }
       res.json({
         id: user.id,
         name: user.name,

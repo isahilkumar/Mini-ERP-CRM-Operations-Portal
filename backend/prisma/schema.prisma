@@ -15,6 +15,7 @@ model User {
   password  String
   name      String
   role      String   @default("SALES")
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   challans  Challan[]
